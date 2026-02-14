@@ -44,11 +44,14 @@ body {
     var(--color-brick) 0deg,
     var(--color-amber) 60deg,
     var(--color-sage) 120deg,
-    var(--color-fern) 180deg,
+    var(--color-fern) calc(var(--gauge-fill, 180) * 1deg),
+    #e0ddd6 calc(var(--gauge-fill, 180) * 1deg),
+    #e0ddd6 180deg,
     transparent 180deg
   );
   mask: radial-gradient(circle at center, transparent 42px, black 43px);
   -webkit-mask: radial-gradient(circle at center, transparent 42px, black 43px);
+  transition: background 0.6s ease;
 }
 
 .gauge-needle {
@@ -62,7 +65,7 @@ body {
   border-radius: 2px;
   transform-origin: bottom center;
   transform: rotate(calc(-90deg + (var(--gauge-value, 0) / 100 * 180deg)));
-  animation: needle-sweep 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .gauge-needle::after {
@@ -88,15 +91,6 @@ body {
   background: var(--color-parchment);
   border: 2px solid var(--color-charcoal);
   border-radius: 50%;
-}
-
-@keyframes needle-sweep {
-  from {
-    transform: rotate(-90deg);
-  }
-  to {
-    transform: rotate(calc(-90deg + (var(--gauge-value, 0) / 100 * 180deg)));
-  }
 }
 
 /* Card entrance animation */

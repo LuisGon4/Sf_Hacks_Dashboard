@@ -1,5 +1,6 @@
 import { SensorCard } from '../cards/SensorCard';
 import { AnalysisCard } from '../cards/AnalysisCard';
+import { ChatPanel } from '../cards/ChatPanel';
 import { useSensorData } from '../../hooks/useSensorData';
 
 export function Dashboard() {
@@ -80,6 +81,10 @@ export function Dashboard() {
           risk={analysisData.environmentalRisk}
           impact={analysisData.sustainabilityImpact}
         />
+
+        <div className="mt-6">
+          <ChatPanel />
+        </div>
 
         <footer className="mt-8 text-center text-xs text-warm-gray">
           Last updated: {new Date(sensorData.timestamp).toLocaleString()}

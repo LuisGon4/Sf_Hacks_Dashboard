@@ -34,11 +34,15 @@ const variantConfig = {
 
 function GreenScoreGauge({ value }) {
   const numValue = typeof value === 'number' ? value : 0;
+  const gaugeFill = Math.min(Math.max(numValue / 100, 0), 1) * 180;
 
   return (
     <div className="flex flex-col items-center mt-2">
-      <div className="gauge-container" style={{ '--gauge-value': numValue }}>
-        <div className="gauge-arc" />
+      <div
+        className="gauge-container"
+        style={{ '--gauge-value': numValue, '--gauge-fill': gaugeFill }}
+      >
+        <div className="gauge-arc" style={{ '--gauge-fill': gaugeFill }} />
         <div className="gauge-needle" style={{ '--gauge-value': numValue }} />
         <div className="gauge-center-dot" />
       </div>
@@ -61,9 +65,33 @@ export function SensorCard({ title, value, unit, variant = 'temperature' }) {
       className={`card-animate bg-parchment rounded-xl border-l-4 ${config.border} p-6 shadow-sm shadow-charcoal/5 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md hover:shadow-charcoal/10`}
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-warm-gray">
-          {title}
-        </h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-warm-gray">
+            {title}
+          </h3>
+          {isScore && (
+            <div className="relative group/info">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-warm-gray cursor-help"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+              <div className="invisible group-hover/info:visible absolute left-0 top-full mt-1 z-10 w-56 rounded-lg bg-parchment border border-sage/40 p-3 text-xs text-charcoal leading-relaxed shadow-md shadow-charcoal/10">
+                The Green Score (0–100) reflects your indoor environmental quality based on live sensor readings. Optimal conditions (68–76°F, 30–50% humidity) score highest. Factors include energy efficiency, comfort, and mold risk.
+              </div>
+            </div>
+          )}
+        </div>
         <div className={`w-9 h-9 rounded-lg ${config.iconBg} ${config.iconColor} flex items-center justify-center`}>
           {config.icon}
         </div>
