@@ -8,12 +8,21 @@ const mockSensorData = {
   humidity: 45,
   greenScore: 85,
   timestamp: new Date().toISOString(),
+  outdoor: {
+    temperature: 68.2,
+    humidity: 55,
+    feelsLike: 67.1,
+    condition: 'Clear',
+    city: 'San Francisco',
+  },
 };
 
 const mockAnalysisData = {
-  recommendation: "Current conditions are optimal. Consider opening windows for natural ventilation.",
+  recommendation: "Outdoor temp is 68°F — close to your indoor 72°F. Consider opening windows instead of running AC.",
   environmentalRisk: "Low",
-  sustainabilityImpact: "Your space is operating efficiently. Estimated 15% energy savings compared to average.",
+  sustainabilityImpact: "Opening windows could save ~$2/day in cooling costs compared to running AC.",
+  acStatus: "likely_unnecessary",
+  tempDelta: 4.3,
 };
 
 export function useSensorData() {
