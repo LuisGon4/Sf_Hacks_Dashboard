@@ -35,23 +35,40 @@ body {
   overflow: hidden;
 }
 
-.gauge-arc {
+/* Gray track — always a full semicircle */
+.gauge-track {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(from 270deg, #e0ddd6 0deg, #e0ddd6 180deg, transparent 180deg);
+  mask: radial-gradient(circle at center, transparent 42px, black 43px);
+  -webkit-mask: radial-gradient(circle at center, transparent 42px, black 43px);
+}
+
+/* Colored fill — proportional, layered on top of track */
+.gauge-fill {
+  position: absolute;
   width: 120px;
   height: 120px;
   border-radius: 50%;
   background: conic-gradient(
-    from 180deg,
+    from 270deg,
     var(--color-brick) 0deg,
     var(--color-amber) 60deg,
     var(--color-sage) 120deg,
-    var(--color-fern) calc(var(--gauge-fill, 180) * 1deg),
-    #e0ddd6 calc(var(--gauge-fill, 180) * 1deg),
-    #e0ddd6 180deg,
+    var(--color-fern) 180deg,
     transparent 180deg
   );
-  mask: radial-gradient(circle at center, transparent 42px, black 43px);
-  -webkit-mask: radial-gradient(circle at center, transparent 42px, black 43px);
-  transition: background 0.6s ease;
+  mask:
+    conic-gradient(from 270deg, black 0deg, black calc(var(--gauge-fill, 180) * 1deg), transparent calc(var(--gauge-fill, 180) * 1deg)),
+    radial-gradient(circle at center, transparent 42px, black 43px);
+  mask-composite: intersect;
+  -webkit-mask:
+    conic-gradient(from 270deg, black 0deg, black calc(var(--gauge-fill, 180) * 1deg), transparent calc(var(--gauge-fill, 180) * 1deg)),
+    radial-gradient(circle at center, transparent 42px, black 43px);
+  -webkit-mask-composite: destination-in;
+  transition: mask 0.6s ease, -webkit-mask 0.6s ease;
 }
 
 .gauge-needle {

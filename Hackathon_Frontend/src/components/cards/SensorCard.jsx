@@ -42,7 +42,8 @@ function GreenScoreGauge({ value }) {
         className="gauge-container"
         style={{ '--gauge-value': numValue, '--gauge-fill': gaugeFill }}
       >
-        <div className="gauge-arc" style={{ '--gauge-fill': gaugeFill }} />
+        <div className="gauge-track" />
+        <div className="gauge-fill" style={{ '--gauge-fill': gaugeFill }} />
         <div className="gauge-needle" style={{ '--gauge-value': numValue }} />
         <div className="gauge-center-dot" />
       </div>
