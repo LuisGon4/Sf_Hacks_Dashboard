@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 
 function parseTemperature(raw) {
-  // "T=20.0" → 20.0
-  const match = raw.match(/T=([\d.]+)/);
+  if (typeof raw === 'number' && isFinite(raw)) return raw;
+  const str = String(raw ?? '');
+  const match = str.match(/([\d.]+)/);
   return match ? parseFloat(match[1]) : null;
 }
 
 function parseHumidity(raw) {
-  // "Humidity=54.0" → 54.0
-  const match = raw.match(/Humidity=([\d.]+)/);
+  if (typeof raw === 'number' && isFinite(raw)) return raw;
+  const str = String(raw ?? '');
+  const match = str.match(/([\d.]+)/);
   return match ? parseFloat(match[1]) : null;
 }
 
