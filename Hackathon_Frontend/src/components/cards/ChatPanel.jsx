@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { API_BASE } from '../../api/config';
 
-const USE_MOCK = true;
-
-const MOCK_REPLY =
-  "It's 68°F outside and 72°F inside — only a 4°F difference. You could open the windows and turn off the AC to save energy. The outdoor humidity is moderate at 55%, so ventilation should feel comfortable.";
-
-export function ChatPanel({ sensorData }) {
+export function ChatPanel({ sensorData, outdoor }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -21,26 +16,23 @@ export function ChatPanel({ sensorData }) {
     setLoading(true);
 
     try {
-      let reply;
-      if (USE_MOCK) {
-        await new Promise((r) => setTimeout(r, 1000));
-        reply = MOCK_REPLY;
-      } else {
-        const context = sensorData
-          ? {
-              indoor: { temperature: sensorData.temperature, humidity: sensorData.humidity },
-              outdoor: sensorData.outdoor || null,
-            }
-          : undefined;
-        const res = await fetch(`${API_BASE}/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, context }),
-        });
-        if (!res.ok) throw new Error('Failed to get response');
-        const data = await res.json();
-        reply = data.reply;
-      }
+      const context = sensorData
+        ? {
+            indoor: { temperature: sensorData.temperature, humidity: sensorData.humidity },
+            outdoor: outdoor || null,
+          }
+        : undefined;
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: JSON.stringify({ message: text, context }),
+      });
+      if (!res.ok) throw new Error('Failed to get response');
+      const data = await res.json();
+      const reply = data.reply;
       setMessages((prev) => [...prev, { role: 'ai', text: reply }]);
     } catch {
       setMessages((prev) => [

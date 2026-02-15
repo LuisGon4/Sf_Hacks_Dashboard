@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 
+// Set to false to restore real API fetching
+const USE_MOCK = true;
+
 function parseTemperature(raw) {
   // "T=20.0" → 20.0
   const match = raw.match(/T=([\d.]+)/);
@@ -39,6 +42,18 @@ export function useSensorData() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        if (USE_MOCK) {
+          setSensorData({
+            temperature: 72.5,
+            humidity: 48.0,
+            greenScore: 92,
+            timestamp: new Date().toISOString(),
+          });
+          setError(null);
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch('/api/');
         if (!response.ok) throw new Error('Failed to fetch sensor data');
         const data = await response.json();

@@ -1,8 +1,81 @@
 import { SensorCard } from '../cards/SensorCard';
+import { WeatherBar } from '../cards/WeatherBar';
+import { AnalysisCard } from '../cards/AnalysisCard';
+import { ChatPanel } from '../cards/ChatPanel';
 import { useSensorData } from '../../hooks/useSensorData';
+import { useWeatherData } from '../../hooks/useWeatherData';
+
+function computeAnalysis(sensorData, outdoor) {
+  const hasOutdoor = outdoor && outdoor.temperature != null;
+  const tempDelta = hasOutdoor ? sensorData.temperature - outdoor.temperature : null;
+  const { temperature, humidity, greenScore } = sensorData;
+
+  // AC status
+  let acStatus;
+  if (hasOutdoor) {
+    if (tempDelta <= 3) acStatus = 'likely_unnecessary';
+    else if (tempDelta <= 8) acStatus = 'justified';
+    else acStatus = 'recommended';
+  } else {
+    if (temperature < 76) acStatus = 'likely_unnecessary';
+    else if (temperature < 82) acStatus = 'justified';
+    else acStatus = 'recommended';
+  }
+
+  // Risk
+  let risk;
+  if (greenScore >= 70) risk = 'Low';
+  else if (greenScore >= 40) risk = 'Medium';
+  else risk = 'High';
+
+  // Recommendation
+  let recommendation;
+  if (humidity > 60) {
+    recommendation = 'Use a dehumidifier or improve ventilation';
+  } else if (humidity < 30) {
+    recommendation = 'Consider a humidifier for comfort';
+  } else if (temperature > 76 && hasOutdoor && outdoor.temperature < temperature) {
+    recommendation = 'Open windows for natural ventilation';
+  } else if (temperature > 76) {
+    recommendation = 'Close blinds and minimize heat sources';
+  } else {
+    recommendation = 'Conditions are optimal — no action needed';
+  }
+
+  // Impact — contextual messages using temp, humidity, outdoor, and greenScore
+  let impact;
+  if (greenScore >= 80) {
+    if (hasOutdoor && Math.abs(tempDelta) <= 3) {
+      impact = `Indoor and outdoor temps are closely matched (${tempDelta > 0 ? '+' : ''}${tempDelta.toFixed(0)}°F delta) — no extra energy needed`;
+    } else {
+      impact = 'Excellent indoor conditions — minimal energy use for climate control';
+    }
+  } else if (greenScore >= 50) {
+    if (hasOutdoor && outdoor.temperature < temperature && tempDelta > 5) {
+      impact = `It's ${tempDelta.toFixed(0)}°F cooler outside — opening windows could save energy vs running AC`;
+    } else if (humidity > 55) {
+      impact = `Humidity at ${humidity.toFixed(0)}% is driving energy waste — dehumidifying is more efficient than overcooling`;
+    } else {
+      impact = 'Conditions are slightly off-ideal — small adjustments can reduce energy use';
+    }
+  } else {
+    if (hasOutdoor && tempDelta > 10) {
+      impact = `${tempDelta.toFixed(0)}°F warmer inside than outside — check for heat sources or poor insulation before increasing AC`;
+    } else if (humidity > 65) {
+      impact = `High humidity (${humidity.toFixed(0)}%) increases perceived heat and mold risk — dehumidify to reduce AC dependency`;
+    } else if (temperature > 82) {
+      impact = `Indoor temp at ${temperature.toFixed(0)}°F is well above comfort range — active cooling needed but check for open windows first`;
+    } else {
+      impact = 'Poor environmental score — addressing root causes saves more energy than compensating with HVAC';
+    }
+  }
+
+  return { recommendation, risk, impact, acStatus, tempDelta };
+}
 
 export function Dashboard() {
   const { sensorData, loading, error } = useSensorData();
+  const { outdoor } = useWeatherData();
 
   if (error && !sensorData) {
     return (
@@ -60,6 +133,8 @@ export function Dashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
+        <WeatherBar outdoor={outdoor} indoorTemp={sensorData.temperature} />
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <SensorCard
             title="Temperature"
@@ -80,6 +155,12 @@ export function Dashboard() {
             variant="score"
           />
         </div>
+
+        <div className="mb-8">
+          <AnalysisCard {...computeAnalysis(sensorData, outdoor)} />
+        </div>
+
+        <ChatPanel sensorData={sensorData} outdoor={outdoor} />
 
         <footer className="mt-8 text-center text-xs text-warm-gray">
           Last updated: {new Date(sensorData.timestamp).toLocaleString()}
