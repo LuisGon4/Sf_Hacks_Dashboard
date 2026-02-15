@@ -4,8 +4,15 @@ const riskConfig = {
   High: { dot: 'bg-brick', text: 'text-brick' },
 };
 
-export function AnalysisCard({ recommendation, risk, impact }) {
+const acStatusConfig = {
+  likely_unnecessary: { label: 'AC Likely Unnecessary', bg: 'bg-moss/10', text: 'text-moss', icon: '\u2714' },
+  justified: { label: 'AC Justified', bg: 'bg-amber/10', text: 'text-amber', icon: '\u2714' },
+  recommended: { label: 'AC Recommended', bg: 'bg-brick/10', text: 'text-brick', icon: '\u26A0' },
+};
+
+export function AnalysisCard({ recommendation, risk, impact, acStatus, tempDelta }) {
   const riskStyle = riskConfig[risk] || riskConfig.Low;
+  const acStyle = acStatus ? acStatusConfig[acStatus] : null;
 
   return (
     <div className="card-animate bg-parchment rounded-xl shadow-sm shadow-charcoal/5 overflow-hidden">
@@ -24,8 +31,21 @@ export function AnalysisCard({ recommendation, risk, impact }) {
       </div>
 
       <div className="p-6 space-y-5">
-        {/* Recommendation */}
+        {/* AC Status + Recommendation */}
         <div>
+          {acStyle && (
+            <div className="flex items-center gap-3 mb-3">
+              <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${acStyle.bg} ${acStyle.text}`}>
+                <span>{acStyle.icon}</span>
+                {acStyle.label}
+              </span>
+              {tempDelta != null && (
+                <span className="text-xs text-warm-gray">
+                  {tempDelta > 0 ? '+' : ''}{tempDelta.toFixed(1)}&deg;F indoor/outdoor delta
+                </span>
+              )}
+            </div>
+          )}
           <h4 className="text-xs font-semibold uppercase tracking-wider text-warm-gray mb-1.5">
             Recommendation
           </h4>

@@ -1,19 +1,24 @@
 import { SensorCard } from '../cards/SensorCard';
-import { AnalysisCard } from '../cards/AnalysisCard';
-import { ChatPanel } from '../cards/ChatPanel';
 import { useSensorData } from '../../hooks/useSensorData';
 
 export function Dashboard() {
-  // eslint-disable-next-line no-unused-vars
-  const { sensorData, analysisData, loading, error } = useSensorData();
+  const { sensorData, loading, error } = useSensorData();
 
-  if (error) {
+  if (error && !sensorData) {
     return (
       <div className="min-h-screen bg-mint-cream flex items-center justify-center">
         <div className="bg-parchment rounded-xl border border-sage p-8 text-center max-w-md">
           <p className="text-brick font-semibold">Unable to connect</p>
           <p className="text-warm-gray text-sm mt-2">{error}</p>
         </div>
+      </div>
+    );
+  }
+
+  if (loading || !sensorData) {
+    return (
+      <div className="min-h-screen bg-mint-cream flex items-center justify-center">
+        <p className="text-warm-gray">Loading sensor data...</p>
       </div>
     );
   }
@@ -74,16 +79,6 @@ export function Dashboard() {
             unit="/100"
             variant="score"
           />
-        </div>
-
-        <AnalysisCard
-          recommendation={analysisData.recommendation}
-          risk={analysisData.environmentalRisk}
-          impact={analysisData.sustainabilityImpact}
-        />
-
-        <div className="mt-6">
-          <ChatPanel />
         </div>
 
         <footer className="mt-8 text-center text-xs text-warm-gray">
