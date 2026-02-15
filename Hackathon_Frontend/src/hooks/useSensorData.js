@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '../api/config';
 
 function parseTemperature(raw) {
   if (typeof raw === 'number' && isFinite(raw)) return raw;
@@ -41,7 +42,9 @@ export function useSensorData() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/');
+        const response = await fetch(`${API_BASE}/`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+        });
         if (!response.ok) throw new Error('Failed to fetch sensor data');
         const data = await response.json();
 
