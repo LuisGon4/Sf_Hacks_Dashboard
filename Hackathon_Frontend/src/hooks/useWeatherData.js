@@ -40,11 +40,23 @@ function cToF(c) {
 }
 
 async function getPosition() {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      resolve({ lat: SF_LAT, lon: SF_LON });
-      return;
+  if (!navigator.geolocation) {
+    return { lat: SF_LAT, lon: SF_LON };
+  }
+
+  // Check if permission is already denied to avoid browser warnings
+  if (navigator.permissions) {
+    try {
+      const status = await navigator.permissions.query({ name: 'geolocation' });
+      if (status.state === 'denied') {
+        return { lat: SF_LAT, lon: SF_LON };
+      }
+    } catch {
+      // permissions API not supported — fall through to normal request
     }
+  }
+
+  return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
       () => resolve({ lat: SF_LAT, lon: SF_LON }),
