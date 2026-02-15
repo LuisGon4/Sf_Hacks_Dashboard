@@ -1,92 +1,76 @@
 import { useState, useEffect } from 'react';
 
-// Set to false when backend is ready
-const USE_MOCK = true;
+function parseTemperature(raw) {
+  // "T=20.0" → 20.0
+  const match = raw.match(/T=([\d.]+)/);
+  return match ? parseFloat(match[1]) : null;
+}
 
-const mockSensorData = {
-  temperature: 72.5,
-  humidity: 45,
-  greenScore: 85,
-  timestamp: new Date().toISOString(),
-  outdoor: {
-    temperature: 68.2,
-    humidity: 55,
-    feelsLike: 67.1,
-    condition: 'Clear',
-    city: 'San Francisco',
-  },
-};
+function parseHumidity(raw) {
+  // "Humidity=54.0" → 54.0
+  const match = raw.match(/Humidity=([\d.]+)/);
+  return match ? parseFloat(match[1]) : null;
+}
 
-const mockAnalysisData = {
-  recommendation: "Outdoor temp is 68°F — close to your indoor 72°F. Consider opening windows instead of running AC.",
-  environmentalRisk: "Low",
-  sustainabilityImpact: "Opening windows could save ~$2/day in cooling costs compared to running AC.",
-  acStatus: "likely_unnecessary",
-  tempDelta: 4.3,
-};
+function celsiusToFahrenheit(c) {
+  return (c * 9) / 5 + 32;
+}
+
+function computeGreenScore(tempF, humidity) {
+  // Ideal: 68–76°F, 30–50% humidity. Score 0–100.
+  let score = 100;
+
+  // Temperature penalty: lose up to 50 points
+  if (tempF < 68) score -= Math.min(50, (68 - tempF) * 5);
+  else if (tempF > 76) score -= Math.min(50, (tempF - 76) * 5);
+
+  // Humidity penalty: lose up to 50 points
+  if (humidity < 30) score -= Math.min(50, (30 - humidity) * 2.5);
+  else if (humidity > 50) score -= Math.min(50, (humidity - 50) * 2.5);
+
+  return Math.max(0, Math.round(score));
+}
 
 export function useSensorData() {
-  const [sensorData, setSensorData] = useState(mockSensorData);
-  // eslint-disable-next-line no-unused-vars
-  const [analysisData, setAnalysisData] = useState(mockAnalysisData);
-  // eslint-disable-next-line no-unused-vars
-  const [loading, setLoading] = useState(false);
-  // eslint-disable-next-line no-unused-vars
+  const [sensorData, setSensorData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (USE_MOCK) {
-      // Update timestamp periodically for mock data
-      const interval = setInterval(() => {
-        setSensorData(prev => ({
-          ...prev,
-          timestamp: new Date().toISOString(),
-          // Add slight variations to mock data
-          temperature: 72 + Math.random() * 2,
-          humidity: 44 + Math.random() * 3,
-        }));
-      }, 30000);
-      return () => clearInterval(interval);
-    }
-
-    // Real API polling (uncomment when backend is ready)
-    /*
-    const fetchSensorData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`${API_BASE}/latest`);
+        const response = await fetch('/api/');
         if (!response.ok) throw new Error('Failed to fetch sensor data');
         const data = await response.json();
-        setSensorData(data);
+
+        const celsius = parseTemperature(data.Temperature);
+        const humidity = parseHumidity(data.Humidity);
+
+        if (celsius === null || humidity === null) {
+          throw new Error('Could not parse sensor data');
+        }
+
+        const tempF = celsiusToFahrenheit(celsius);
+        const greenScore = computeGreenScore(tempF, humidity);
+
+        setSensorData({
+          temperature: parseFloat(tempF.toFixed(1)),
+          humidity: parseFloat(humidity.toFixed(1)),
+          greenScore,
+          timestamp: new Date().toISOString(),
+        });
+        setError(null);
       } catch (err) {
         setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchAnalysis = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/analysis`);
-        if (!response.ok) throw new Error('Failed to fetch analysis');
-        const data = await response.json();
-        setAnalysisData(data);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
-    fetchSensorData();
-    fetchAnalysis();
-
-    // Poll /latest every 30 seconds
-    const sensorInterval = setInterval(fetchSensorData, 30000);
-    // Poll /analysis every 5 minutes
-    const analysisInterval = setInterval(fetchAnalysis, 300000);
-
-    return () => {
-      clearInterval(sensorInterval);
-      clearInterval(analysisInterval);
-    };
-    */
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  return { sensorData, analysisData, loading, error };
+  return { sensorData, loading, error };
 }

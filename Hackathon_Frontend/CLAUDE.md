@@ -4,9 +4,9 @@
 
 Real-time environmental dashboard. Read-only, no authentication.
 
-**Stack:** Arduino sensors -> Flask API -> PostgreSQL, React (Vite) frontend, backboard.io for AI insights
+**Stack:** Arduino sensors -> Flask API (ngrok tunnel) -> React (Vite) frontend
 
-**Key constraint:** Frontend never calls AI directly. All AI logic is backend-only.
+**Key constraint:** Frontend displays raw Arduino data only. No AI, no outdoor weather.
 
 ---
 
@@ -24,7 +24,7 @@ npm run dev
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install flask flask-cors psycopg2-binary python-dotenv requests
+pip install flask flask-cors pyserial python-dotenv
 python app.py
 ```
 
@@ -45,7 +45,7 @@ API endpoints MUST be configurable via environment variable.
 **.env (frontend):**
 
 ```
-VITE_API_BASE_URL=http://localhost:5000
+VITE_API_BASE_URL=https://your-ngrok-url.ngrok-free.dev
 ```
 
 **Usage in code:**
@@ -53,44 +53,40 @@ VITE_API_BASE_URL=http://localhost:5000
 ```javascript
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-fetch(`${API_BASE}/latest`)
-fetch(`${API_BASE}/analysis`)
+fetch(`${API_BASE}/`)
 ```
 
 **Rules:**
 - Never hardcode URLs
 - Never store secrets in frontend env (only public URLs in `VITE_` vars)
 - `.env` and `*.local` files are in `.gitignore`
-- If backend changes (Flask -> Spring Boot), only update `VITE_API_BASE_URL`
+- Include `ngrok-skip-browser-warning: true` header in fetch requests
 
 ---
 
 ## API Contract
 
-### GET /latest
+### GET / (root)
+
+Backend returns raw Arduino sensor strings:
 
 ```json
 {
-  "temperature": number,
-  "humidity": number,
-  "timestamp": string,
-  "greenScore": number
+  "CALL": "SUCCESS END OP OF dataHandler -> arduino information",
+  "Humidity": "Humidity=54.0",
+  "Temperature": "T=20.0"
 }
 ```
 
-### GET /analysis
-
-```json
-{
-  "recommendation": string,
-  "environmentalRisk": string,
-  "sustainabilityImpact": string
-}
-```
+**Frontend parsing:**
+- Temperature: extract number from `"T=20.0"` → `20.0` (Celsius)
+- Humidity: extract number from `"Humidity=54.0"` → `54.0` (%)
+- Convert temperature from °C to °F: `(celsius * 9/5) + 32`
+- Compute `greenScore` locally (ideal: 68–76°F, 30–50% humidity)
+- Add `timestamp` from `new Date().toISOString()` (backend doesn't provide one)
 
 **Polling rules:**
-- Poll `/latest` every 20-30 seconds
-- Poll `/analysis` max every 5-10 minutes
+- Poll `/` every 30 seconds
 - No infinite useEffect loops
 - No uncontrolled re-renders triggering fetch
 
@@ -105,31 +101,22 @@ fetch(`${API_BASE}/analysis`)
 ### Architecture
 
 ```
-Arduino -> Flask API -> PostgreSQL
-React   -> Flask API
-Flask   -> backboard.io (AI)
+Arduino (USB serial) -> Flask API -> ngrok tunnel
+React Frontend       -> ngrok URL -> display data
 ```
 
-Frontend = display only
-Backend = logic + AI + rate limiting
+Frontend = display only (temperature °F, humidity %, green score)
+Backend = serial reader + JSON server
 
 ### Technical Notes
 
 - Tailwind CSS is referenced but NOT yet configured in this project
 - ESLint uses flat config format (`eslint.config.js`) with React hooks rules
 - No API keys in React code
-- No backboard.io calls from frontend
-
-### AI Usage Controls (Backend Only)
-
-Backend rate limits to prevent token waste:
-- Only trigger AI every 10 min OR if temp delta > 3F OR humidity delta > 5%
-- Cache last AI response
-- `MAX_AI_CALLS_PER_HOUR=10`, `MAX_AI_CALLS_PER_DAY=50`
-- If limit exceeded, return cached result
+- WeatherBar, AnalysisCard, ChatPanel components exist but are unused (kept for potential future use)
 
 ### Sustainability Framing
 
 GreenSense encourages passive cooling, reduces HVAC waste, detects mold risk, improves indoor energy efficiency.
 
-MVP: Secure + Rate-limited + Demo-ready.
+MVP: Simple + Demo-ready.
