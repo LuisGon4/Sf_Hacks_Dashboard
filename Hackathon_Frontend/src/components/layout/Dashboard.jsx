@@ -73,6 +73,7 @@ function computeAnalysis(sensorData, outdoor) {
   return { recommendation, risk, impact, acStatus, tempDelta };
 }
 
+// NOTE: this is where the main layout is for the frontend dashboard for client reading of data
 export function Dashboard() {
   const { sensorData, loading, error } = useSensorData();
   const { outdoor } = useWeatherData();
