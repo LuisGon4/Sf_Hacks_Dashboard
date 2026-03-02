@@ -1,6 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'; // purpose: main page to link from admin or greensense dashboard
-import { Dashboard } from './components/layout/Dashboard.jsx';
-import { AdminPage } from './components/layout/RouterAdmin.jsx';
+import { BrowserRouter,
+         Routes,
+         Route
+} from 'react-router-dom'; // purpose: main page to link from admin or greensense dashboard
+import { Dashboard,
+         AdminPage
+} from 'components/layout/'
+
 // direction admin panel for React app, making references to admin alongside added in sub webpages from admin page
 
 function App() {
