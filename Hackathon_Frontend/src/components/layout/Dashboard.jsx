@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom';
 import { SensorCard } from '../cards/SensorCard';
 import { WeatherBar } from '../cards/WeatherBar';
 import { AnalysisCard } from '../cards/AnalysisCard';
 import { ChatPanel } from '../cards/ChatPanel';
 import { useSensorData } from '../../hooks/useSensorData';
+import { useSimulatedSensorData } from '../../hooks/useSimulatedSensorData';
 import { useWeatherData } from '../../hooks/useWeatherData';
 
 function computeAnalysis(sensorData, outdoor) {
@@ -74,11 +76,13 @@ function computeAnalysis(sensorData, outdoor) {
 }
 
 // NOTE: this is where the main layout is for the frontend dashboard for client reading of data
-export function Dashboard() {
-  const { sensorData, loading, error } = useSensorData();
+export function Dashboard({ simulated = false }) {
+  const liveData = useSensorData();
+  const simData = useSimulatedSensorData();
+  const { sensorData, loading, error } = simulated ? simData : liveData;
   const { outdoor } = useWeatherData();
 
-  if (error && !sensorData) {
+  if (!simulated && error && !sensorData) {
     return (
       <div className="min-h-screen bg-mint-cream flex items-center justify-center">
         <div className="bg-parchment rounded-xl border border-sage p-8 text-center max-w-md">
@@ -101,7 +105,7 @@ export function Dashboard() {
     <div className="min-h-screen bg-mint-cream">
       <header className="bg-charcoal">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-sage">
               <path
                 d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20c4 0 6-4 6-4s2 2 6 2c0-6-3-10-3-10Z"
@@ -122,14 +126,21 @@ export function Dashboard() {
               <h1 className="font-serif text-xl font-bold text-parchment tracking-tight">GreenSense</h1>
               <p className="text-xs text-sage">Environmental Dashboard</p>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-sage opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-moss"></span>
-            </span>
-            <span className="text-xs text-sage font-medium">Live</span>
-          </div>
+          </Link>
+          {simulated ? (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex rounded-full h-2.5 w-2.5 bg-amber"></span>
+              <span className="text-xs text-amber font-medium">Demo Mode</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-sage opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-moss"></span>
+              </span>
+              <span className="text-xs text-sage font-medium">Live</span>
+            </div>
+          )}
         </div>
       </header>
 
