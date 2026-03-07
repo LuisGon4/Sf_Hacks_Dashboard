@@ -14,6 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<AdminPage />} /> {/* Admin start page part of app*/}
           <Route path="/greensense-dashboard" element={<Dashboard />} />  {/* GreenSense App part of app */}
+          <Route path="/greensense-dashboard/simulated" element={<Dashboard simulated />} />  {/* Simulation/demo mode */}
 
         </Routes>
       </BrowserRouter>

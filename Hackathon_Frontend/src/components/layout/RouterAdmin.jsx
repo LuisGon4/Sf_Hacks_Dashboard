@@ -67,6 +67,36 @@ export function AdminPage() {
               <path d="m9 18 6-6-6-6" />
             </svg>
           </Link>
+
+          <Link
+            to="/greensense-dashboard/simulated"
+            className="card-animate bg-parchment rounded-xl border-l-4 border-l-amber p-6
+                       shadow-sm shadow-charcoal/5 flex items-center justify-between gap-4
+                       hover:-translate-y-0.5 hover:shadow-md hover:shadow-charcoal/10
+                       transition-all duration-200 ease-out group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-amber/10 text-amber flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <path d="M12 18v-6" />
+                  <path d="M9 15l3 3 3-3" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-serif font-semibold text-charcoal">Simulation Mode</p>
+                <p className="text-xs text-warm-gray mt-0.5">Demo dashboard with simulated sensor data</p>
+              </div>
+            </div>
+            <svg
+              width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              className="text-warm-gray group-hover:text-amber group-hover:translate-x-0.5 transition-all flex-shrink-0"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </Link>
         </nav>
       </main>
     </div>
